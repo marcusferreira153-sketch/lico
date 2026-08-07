@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <!-- Força a barra de status do iPhone a ficar preta -->
+    <meta name="theme-color" content="#0a0507">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Missão Last Dance 🇪🇸</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+        
+        :root {
+            /* Paleta Dark com Rosa e Branco */
+            --bg-dark: #0a0507; 
+            --accent-pink: #ff66b2; 
+            --accent-hotpink: #ff007f;
+            --accent-white: #ffffff;
+            --text-main: #ffffff;
+            --text-muted: #d1d1d1;
+            --glass-bg: rgba(20, 10, 15, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.15); 
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            background-color: var(--bg-dark) !important;
+            margin: 0;
+            padding: 0;
+            overscroll-behavior: none;
+        }
+
+        body {
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            /* Fundos com brilhos sutis em branco e rosa */
+            background: radial-gradient(circle at 15% 0%, rgba(255, 255, 255, 0.08) 0%, var(--bg-dark) 60%),
+                        radial-gradient(circle at 85% 100%, rgba(255, 102, 178, 0.15) 0%, var(--bg-dark) 60%);
+            padding: 40px 15px; 
+        }
+
+        @media (hover: hover) and (pointer: fine) {
+            body, .option-btn, .btn-start, .photo-frame, .secret-btn, .close-modal {
+                cursor: none;
+            }
+            .custom-cursor {
+                position: fixed;
+                width: 12px;
+                height: 12px;
+                background: var(--accent-white);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 9999;
+                box-shadow: 0 0 15px 3px rgba(255, 102, 178, 0.6);
+                transition: transform 0.1s;
+            }
+        }
+
+        @media (hover: none) and (pointer: coarse) {
+            .custom-cursor { display: none !important; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            position: relative;
+            z-index: 10;
+            margin: auto; 
+        }
+
+        .page {
+            display: none;
+            opacity: 0;
+            transform: scale(0.95) translateY(20px);
+            filter: blur(8px);
+            transition: all 0.5s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .page.active {
+            display: block;
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            filter: blur(0);
+        }
+
+        .hero, .question-container, .confirmation {
+            text-align: center;
+            padding: 40px 25px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 28px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.8),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--accent-pink);
+            padding: 6px 16px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+        }
+
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 18px;
+            background: linear-gradient(135deg, var(--accent-white) 20%, var(--accent-pink) 65%, var(--accent-hotpink) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+
+        .hero p {
+            font-size: 1.05rem;
+            line-height: 1.75;
+            color: var(--text-muted);
+            margin-bottom: 30px;
+            font-weight: 400;
+        }
+
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 35px;
+            padding: 5px;
+            max-width: 550px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .photo-frame {
+            aspect-ratio: 4/5;
+            background: var(--accent-white);
+            padding: 6px 6px 20px 6px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+            position: relative;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .photo-frame:nth-child(1) { transform: rotate(-4deg); }
+        .photo-frame:nth-child(2) { transform: rotate(3deg) translateY(-5px); }
+        .photo-frame:nth-child(3) { transform: rotate(-2deg); }
+        .photo-frame:nth-child(4) { transform: rotate(4deg); }
+        .photo-frame:nth-child(5) { transform: rotate(-3deg) translateY(-3px); }
+        .photo-frame:nth-child(6) { transform: rotate(2deg); }
+
+        .photo-frame:active, .photo-frame:hover {
+            transform: scale(1.08) rotate(0deg);
+            box-shadow: 0 15px 30px rgba(255, 255, 255, 0.2);
+            z-index: 10;
+        }
+
+        .photo-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        .btn-start {
+            width: 100%;
+            max-width: 360px;
+            background: linear-gradient(135deg, var(--accent-hotpink), var(--accent-pink));
+            color: var(--accent-white);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 18px 30px;
+            font-size: 1.1rem;
+            font-weight: 800;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            box-shadow: 0 10px 30px rgba(255, 0, 127, 0.4);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-start:active { transform: scale(0.96); }
+
+        .question-container h2 {
+            font-size: 1.6rem;
+            color: var(--accent-white);
+            margin-bottom: 25px;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: var(--accent-white);
+            padding: 16px 20px;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-weight: 500;
+            text-align: left;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .option-btn:active, .option-btn:hover {
+            border-color: var(--accent-pink);
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 102, 178, 0.2);
+        }
+
+        .progress-wrapper {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .progress-text {
+            font-size: 0.75rem;
+            color: var(--accent-white);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 6px;
+            display: block;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-white), var(--accent-pink));
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .ticket-card {
+            background: linear-gradient(145deg, rgba(22, 10, 18, 0.95), rgba(8, 4, 7, 0.98));
+            border: 1.5px solid rgba(255, 255, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            padding: 35px 22px;
+        }
+
+        .stamp-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            border: 2px dashed var(--accent-white);
+            color: var(--accent-white);
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.65rem;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            transform: rotate(8deg);
+            text-transform: uppercase;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .ticket-header {
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .ticket-header h2 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--accent-white), var(--accent-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .ticket-subtitle {
+            font-size: 0.85rem;
+            color: var(--accent-pink);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .flight-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 22px;
+            text-align: left;
+        }
+
+        .info-item label {
+            display: block;
+            font-size: 0.68rem;
+            color: var(--accent-pink);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 700;
+            margin-bottom: 3px;
+        }
+
+        .info-item span {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--accent-white);
+        }
+
+        .itinerary-summary {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            padding: 18px;
+            margin-bottom: 22px;
+            text-align: left;
+        }
+
+        .itinerary-title {
+            font-size: 0.85rem;
+            color: var(--accent-white);
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 8px;
+        }
+
+        .summary-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.88rem;
+            line-height: 1.4;
+        }
+
+        .summary-row .key {
+            color: var(--text-muted);
+            font-size: 0.82rem;
+        }
+
+        .summary-row .val {
+            color: var(--accent-white);
+            font-weight: 700;
+            text-align: right;
+            max-width: 60%;
+        }
+
+        .checklist-box {
+            background: rgba(255, 255, 255, 0.05);
+            border-left: 3px solid var(--accent-white);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: left;
+            margin-bottom: 25px;
+        }
+
+        .checklist-title {
+            font-size: 0.8rem;
+            color: var(--accent-pink);
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .checklist-items {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .checklist-items li {
+            font-size: 0.88rem;
+            color: #eee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .checklist-items li span {
+            color: var(--accent-white);
+        }
+
+        .barcode-wrapper {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .barcode {
+            height: 35px;
+            width: 80%;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--accent-white),
+                var(--accent-white) 2px,
+                transparent 2px,
+                transparent 5px,
+                var(--accent-white) 5px,
+                var(--accent-white) 9px,
+                transparent 9px,
+                transparent 11px
+            );
+            opacity: 0.7;
+        }
+
+        .barcode-num {
+            font-family: monospace;
+            font-size: 0.7rem;
+            letter-spacing: 4px;
+            color: var(--text-muted);
+        }
+
+        .secret-btn {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 102, 178, 0.2));
+            border: 1px solid var(--accent-white);
+            color: var(--accent-white);
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.15);
+        }
+
+        .secret-btn:active { transform: scale(0.95); }
+
+        .secret-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            padding: 20px;
+        }
+
+        .secret-modal.active { display: flex; opacity: 1; }
+
+        .secret-modal-content {
+            position: relative;
+            background: var(--accent-white);
+            padding: 8px 8px 20px 8px;
+            border-radius: 12px;
+            max-width: 90%;
+            max-height: 80vh;
+        }
+
+        .secret-modal-content img {
+            width: 100%;
+            max-height: 65vh;
+            border-radius: 6px;
+            object-fit: contain;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: -12px; right: -12px;
+            background: var(--accent-white);
+            color: var(--bg-dark);
+            width: 32px; height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+
+        #nature-canvas, #fireworks-canvas {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+        }
+        #nature-canvas { z-index: 1; }
+        #fireworks-canvas { z-index: 100; }
+
+        @media (max-width: 480px) {
+            body { padding: 15px 10px; }
+            .hero, .question-container, .confirmation { padding: 25px 15px; }
+            .hero h1 { font-size: 2rem; }
+            .hero p { 
+                font-size: 0.95rem; 
+                margin-bottom: 25px; 
+                line-height: 1.5;
+            }
+            .photo-gallery { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 12px; 
+                margin-bottom: 25px;
+                padding: 0;
+                width: 100%;
+            }
+            .photo-frame { 
+                padding: 4px 4px 14px 4px; 
+                transform: none !important;
+            }
+            .photo-frame:active { transform: scale(1.05) !important; }
+            .btn-start { 
+                font-size: 0.95rem; 
+                padding: 16px 18px; 
+                width: 100%;
+            }
+            .option-btn { font-size: 0.9rem; padding: 14px; }
+            .flight-info-grid { grid-template-columns: 1fr; gap: 10px; }
+            .ticket-card { padding: 25px 15px; }
+            .stamp-badge {
+                font-size: 0.55rem;
+                padding: 4px 8px;
+                top: 10px;
+                right: 10px;
+            }
+            .ticket-header h2 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="custom-cursor" id="cursor"></div>
+    <canvas id="nature-canvas"></canvas>
+    <canvas id="fireworks-canvas"></canvas>
+
+    <div class="container">
+        
+        <!-- PÁGINA 1: Introdução -->
+        <div id="page1" class="page active">
+            <div class="hero">
+                <div class="hero-badge"><img src="https://flagcdn.com/w20/es.png" style="height: 12px; vertical-align: middle;"> Operação Despedida</div>
+                <h1>Last Dance ✈️</h1>
+                <p>A princesa achou mesmo que ia fugir pra Espanha por meio ano sem se despedir do insuportável aqui? Negativo! Isso aqui é protocolo de segurança máxima vc precisa do meu carimbo. Sem o meu ok, a PF nem te deixa chegar perto do avião.</p>
+                
+                <section class="photo-gallery">
+                    <div class="photo-frame" onclick="openImageModal('foto1_4.jpg')"><img src="foto1_4.jpg" alt="Foto 1"></div>
+                    <div class="photo-frame" onclick="openImageModal('foto2_4.jpg')"><img src="foto2_4.jpg" alt="Foto 2"></div>
+                    <div class="photo-frame" onclick="openImageModal('foto3_4.jpg')"><img src="foto3_4.jpg" alt="Foto 3"></div>
+                    <div class="photo-frame" onclick="openImageModal('foto4_4.jpg')"><img src="foto4_4.jpg" alt="Foto 4"></div>
+                    <div class="photo-frame" onclick="openImageModal('foto5_4.jpg')"><img src="foto5_4.jpg" alt="Foto 5"></div>
+                    <div class="photo-frame" onclick="openImageModal('foto6_4.jpg')"><img src="foto6_4.jpg" alt="Foto 6"></div>
+                </section>
+
+                <button class="btn-start" onclick="nextPage(2)">
+                    <span>Carimbar Passaporte</span> 🛂
+                </button>
+            </div>
+        </div>
+
+        <!-- PÁGINA 2: Data (Sem os emojis no saveAnswer para garantir o funcionamento) -->
+        <div id="page2" class="page">
+            <div class="question-container">
+                <div class="progress-wrapper">
+                    <span class="progress-text">Pergunta 1 de 8</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 12.5%;"></div></div>
+                </div>
+                <h2>Quando vai ser a data do crime? (se atrasar eu cancelo sua passagem pra Espanha) 🕒⏳</h2>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="saveAnswer('data', '15/08 às 17:30', 3)"><span>15/08 às 17:30</span> 🗓️</button>
+                    <button class="option-btn" onclick="saveAnswer('data', '16/08 às 17:00', 3)"><span>16/08 às 17:00</span> 🗓️</button>
+                    <button class="option-btn" onclick="saveAnswer('data', '17/08 às 17:30', 3)"><span>17/08 às 17:30</span> 🗓️</button>
+                    <button class="option-btn" onclick="saveAnswer('data', '18/08 às 17:00', 3)"><span>18/08 às 17:00</span> 🗓️</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 3: Look -->
+        <div id="page3" class="page">
+            <div class="question-container">
+                <div class="progress-wrapper">
+                    <span class="progress-text">Pergunta 2 de 8</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 25%;"></div></div>
+                </div>
+                <h2>Como vc quer ir vestida? 👸🏻</h2>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="saveAnswer('roupa', 'Toda arrumada', 4)"><span>Toda arrumada, linda e maravilhosa (igual eu sou todo dia)</span> 👑</button>
+                    <button class="option-btn" onclick="saveAnswer('roupa', 'Bem Comfy', 4)"><span>Bem comfy, porque vc já me acha linda de qualquer jeito mesmo</span> 🧸</button>
+                    <button class="option-btn" onclick="saveAnswer('roupa', 'Arrumada + Comfy', 4)"><span>O melhor dos dois mundos, chego toda arrumada e depois mudo pro modo comfy insano</span> 🔁</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 4: Música -->
+        <div id="page4" class="page">
+            <div class="question-container">
+                <div class="progress-wrapper">
+                    <span class="progress-text">Pergunta 3 de 8</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 37.5%;"></div></div>
+                </div>
+                <h2>Qual vai ser a trilha sonora da noite? 🎵</h2>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="saveAnswer('musica', 'Ariana Little', 5)"><span>Ariana Little pra eu cantar todas no seu ouvido</span> 🌸</button>
+                    <button class="option-btn" onclick="saveAnswer('musica', 'Sabrina Carpinteira', 5)"><span>Sabrina Carpinteira pra ver se ela prega algum juízo nessa sua cabeça</span> 🪚</button>
+                    <button class="option-btn" onclick="saveAnswer('musica', 'Música de Elevador', 5)"><span>Música de elevador bem chata só pra ver se vc cala a boca</span> 🛗</button>
+                    <button class="option-btn" onclick="saveAnswer('musica', 'Marina Floss', 5)"><span>Marina Floss pra deixar o clima bem gostosinho</span> 🌿</button>
+                    <button class="option-btn" onclick="saveAnswer('musica', 'TODAS', 5)"><span>TODAS (menos a de elevador, vsf)</span> 🔥</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 5: Janta -->
+        <div id="page5" class="page">
+            <div class="question-container">
+                <div class="progress-wrapper">
+                    <span class="progress-text">Pergunta 4 de 8</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 50%;"></div></div>
+                </div>
+                <h2>O que a gente vai jantar? 🍴</h2>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="saveAnswer('comida', 'Pizza Cabulosa', 6)"><span>Pizza cabulosa pra gente comer até ficar redondo</span> 🍕</button>
+                    <button class="option-btn" onclick="saveAnswer('comida', 'Combinado Japa', 6)"><span>Combinado de japa gigante, porque no avião não tem sushiman</span> 🍣</button>
+                    <button class="option-btn" onclick="saveAnswer('comida', 'Hambúrguer Artesanal', 6)"><span>Hambúrguer bem artesanal e gigantesco chei de molho e cebola ruim</span> 🍔</button>
+                    <button class="option-btn" onclick="saveAnswer('comida', 'OS TRÊS!', 6)"><span>OS TRÊS! EU TO PASSANDO FOME EM CASA</span> 🤤</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 6: Sobremesa -->
+        <div id="page6" class="page">
+            <div class="question-container">
+                <div class="progress-wrapper">
+                    <span class="progress-text">Pergunta 5 de 8</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 62.5%;"></div></div>
+                </div>
+                <h2>E a sobremesa emm, quer o que? 🍪</h2>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="saveAnswer('sobremesa', 'Muitos Chocolates', 7)"><span>Chocolates pra me manter calma e não te matar</span> 🍫</button>
+                    <button class="option-btn" onclick="saveAnswer('sobremesa', 'Pote de Sorvete', 7)"><span>Um pote imenso de sorvete pra gente comer direto no pote</span> 🍦</button>
+                    <button class="option-btn" onclick="saveAnswer('sobremesa', 'TUDO QUE TIVER', 7)"><span>TUDO! Se não tiver pelo menos três tipos de doce eu nem vou</span> 🤤</button>
+                    <button class="option-btn" onclick="saveAnswer('sobremesa', 'Melhor Sobremesa Surpresa', 7)"><span>SURPRESA, vai ter que trazer a melhor sobremesa da minha vida</span> 🤫</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 7: Registro -->
+        <div id="page7" class="page">
+            <div class="question-container">
+                <div class="progress-wrapper">
+                    <span class="progress-text">Pergunta 6 de 8</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 75%;"></div></div>
+                </div>
+                <h2>Como a gente vai registrar esse dia?</h2>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="saveAnswer('registro', 'Carta Secreta', 8)"><span>Vc vai escrever uma carta secreta pra eu só abrir quando pousar</span> ✉️</button>
+                    <button class="option-btn" onclick="saveAnswer('registro', 'Vídeo Retardado', 8)"><span>Gravar um vídeo RETARDADO pro nosso eu do futuro ver daqui 6 meses</span> 📹</button>
+                    <button class="option-btn" onclick="saveAnswer('registro', 'Assalto', 8)"><span>Assaltar uma joalheria</span> 🤪</button>
+                    <button class="option-btn" onclick="saveAnswer('registro', 'Tudo Acima', 8)"><span>Fazer tudo que tá aí em cima</span> 👶🏻</button>
+                    <button class="option-btn" onclick="saveAnswer('registro', 'No Coração', 8)"><span>Apenas guardar no coração não enche o meu saco</span> 🤨</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 8: Espanha -->
+        <div id="page8" class="page">
+            <div class="question-container">
+                <div class="progress-wrapper">
+                    <span class="progress-text">Pergunta 7 de 8</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 87.5%;"></div></div>
+                </div>
+                <h2>Como a gente vai lidar com essa sua ida pra Espanha? ✈️</h2>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="saveAnswer('espanha', 'Modo Demência', 9)"><span>Espanha? Que Espanha? A gente finge demência e vc jura que eu só fui na padaria</span> 🙈</button>
+                    <button class="option-btn" onclick="saveAnswer('espanha', 'Me Visita Lá', 9)"><span>Vc que se vire pra comprar a passagem e ir me visitar lá antes dos 6 meses acabarem</span> 🎟️</button>
+                    <button class="option-btn" onclick="saveAnswer('espanha', 'Abraço Demorado', 9)"><span>Vai ter que me dar um abraço de 5 minutos sem soltar no portão de embarque antes de eu ir</span> 🫂</button>
+                    <button class="option-btn" onclick="saveAnswer('espanha', 'Trato Fechado', 9)"><span>Fechar um trato de que a gente continua exatamente de onde parou quando eu voltar</span> ❤️</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA 9: Regra Suprema -->
+        <div id="page9" class="page">
+            <div class="question-container">
+                <div class="progress-wrapper">
+                    <span class="progress-text">Última Pergunta</span>
+                    <div class="progress-bar"><div class="progress-fill" style="width: 100%;"></div></div>
+                </div>
+                <h2>Qual é a REGRA SUPREMA de hoje? 📜</h2>
+                <div class="options-grid">
+                    <button class="option-btn" onclick="saveAnswer('regra', '3 Desejos Especiais', 'final')"><span>Tenho direito a 3 desejos especiais hoje e vc é proibido de recusar qualquer um (SE ESCOLHER ESSA NÃO CHAPA)</span> 📜</button>
+                    <button class="option-btn" onclick="saveAnswer('regra', 'Não Vira Sim', 'final')"><span>Cada não que vc disser vira automaticamente um sim pra mim</span> 🤷‍♀️</button>
+                    <button class="option-btn" onclick="saveAnswer('regra', 'Concordar 100%', 'final')"><span>Vc tem que concordar com 100% das minhas opiniões</span> 🤝</button>
+                    <button class="option-btn" onclick="saveAnswer('regra', 'Elogio a cada 20min', 'final')"><span>Vc é obrigado a dizer que eu sou linda a cada 20 minutos</span> 💅</button>
+                    <button class="option-btn" onclick="saveAnswer('regra', 'DITADURA COMPLETA', 'final')"><span>TODAS! (só até meia-noite, pq nem o Papa aguenta esse nível de ditadura)</span> 🤓</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PÁGINA FINAL: SUPER DETALHADA -->
+        <div id="page-final" class="page">
+            <div class="confirmation ticket-card">
+                
+                <div class="stamp-badge">VISTO APROVADO 🛂</div>
+
+                <div class="ticket-header">
+                    <div style="font-size:2rem; margin-bottom: 5px; display:flex; align-items:center; justify-content:center; gap:8px;">✈️ <img src="https://flagcdn.com/w40/es.png" style="height: 1.2em; vertical-align: middle;"></div>
+                    <h2>Check-in Realizado!</h2>
+                    <div class="ticket-subtitle">Cartão de Embarque - Operação Despedida</div>
+                </div>
+
+                <div class="flight-info-grid">
+                    <div class="info-item">
+                        <label>PASSAGEIRA VIP</label>
+                        <span>Alice Princesa / Ditadora 👑</span>
+                    </div>
+                    <div class="info-item">
+                        <label>DESTINO FINAL</label>
+                        <span>Espanha (Escala no Marcus) 📍</span>
+                    </div>
+                    <div class="info-item">
+                        <label>DATA & HORA</label>
+                        <span id="summary-data">15/08 às 17:30</span>
+                    </div>
+                    <div class="info-item">
+                        <label>STATUS DA PASSAGEM</label>
+                        <span style="color:var(--accent-pink);">100% CONFIRMADO ✓</span>
+                    </div>
+                </div>
+
+                <div class="itinerary-summary">
+                    <div class="itinerary-title">
+                        <span>📝</span> Protocolo Secreto
+                    </div>
+                    <div class="summary-list">
+                        <div class="summary-row">
+                            <span class="key">Dress Code:</span>
+                            <span class="val" id="summary-roupa">-</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="key">Trilha Sonora:</span>
+                            <span class="val" id="summary-musica">-</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="key">O Jantar:</span>
+                            <span class="val" id="summary-comida">-</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="key">Sobremesa:</span>
+                            <span class="val" id="summary-sobremesa">-</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="key">Memórias:</span>
+                            <span class="val" id="summary-registro">-</span>
+                        </div>
+                        <div class="summary-row">
+                            <span class="key">Regra Suprema:</span>
+                            <span class="val" id="summary-regra" style="color:var(--accent-pink);">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checklist-box">
+                    <div class="checklist-title">📌 Checklist de Embarque da Lico</div>
+                    <ul class="checklist-items">
+                        <li><span>✔</span> Montar mochila com o essencial pra dormir fuera de su casita</li>
+                        <li><span>✔</span> Ir impecável como sempre</li>
+                        <li><span>✔</span> Ir com o estômago vazio</li>
+                        <li><span>✔</span> Deixar o orgulho de lado e admitir que vai sentir minha falta todo santo dia</li>
+                    </ul>
+                </div>
+
+                <div style="text-align: center;">
+                    <button class="secret-btn" onclick="openImageModal('foto_secreta.jpg')">Botão Secreto 🤫</button>
+                </div>
+                
+                <!-- BOTÃO DO WHATSAPP ADICIONADO AQUI -->
+                <div style="text-align: center; margin-top: 15px;">
+                    <button class="btn-start" onclick="enviarWhatsApp()" style="font-size: 0.9rem; padding: 12px 20px; width: 100%; max-width: 280px;">
+                        Enviar Check-in pro Marcus 📲
+                    </button>
+                </div>
+
+                <div class="barcode-wrapper">
+                    <div class="barcode"></div>
+                    <div class="barcode-num">ESPANHA-2026-LAST-LICO-MIMO</div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Modal das Fotos -->
+    <div id="secret-modal" class="secret-modal" onclick="closeSecretModal()">
+        <div class="secret-modal-content" onclick="event.stopPropagation()">
+            <span class="close-modal" onclick="closeSecretModal()">&times;</span>
+            <img id="modal-image" src="foto_secreta.jpg" alt="Foto Ampliada">
+        </div>
+    </div>
+
+    <script>
+        // Cursor
+        const cursor = document.getElementById('cursor');
+        if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX - 6 + 'px';
+                cursor.style.top = e.clientY - 6 + 'px';
+            });
+            document.addEventListener('mousedown', () => cursor.style.transform = 'scale(0.5)');
+            document.addEventListener('mouseup', () => cursor.style.transform = 'scale(1)');
+        }
+
+        // Modal de Imagem
+        function openImageModal(imgSrc) {
+            const modal = document.getElementById('secret-modal');
+            const modalImg = document.getElementById('modal-image');
+            modalImg.src = imgSrc;
+            modal.classList.add('active');
+            if (navigator.vibrate) navigator.vibrate(80);
+        }
+
+        function closeSecretModal() {
+            document.getElementById('secret-modal').classList.remove('active');
+        }
+
+        // Fundo Pétalas (MISTURANDO BRANCO E ROSA)
+        const natureCanvas = document.getElementById('nature-canvas');
+        const nCtx = natureCanvas.getContext('2d');
+        let leaves = [];
+        const numPetals = 120; 
+
+        function resizeNature() {
+            natureCanvas.width = window.innerWidth;
+            natureCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeNature);
+        resizeNature();
+
+        // Array com tons de rosa e o branco para as pétalas
+        const petalColors = ['#ff66b2', '#ff007f', '#ffffff', '#ffe6f2'];
+
+        for (let i = 0; i < numPetals; i++) {
+            leaves.push({
+                x: Math.random() * natureCanvas.width,
+                y: Math.random() * natureCanvas.height,
+                size: Math.random() * 4 + 3,
+                speedY: Math.random() * 1.5 + 0.8,
+                speedX: Math.random() * 2 - 1,
+                angle: Math.random() * Math.PI * 2,
+                spin: Math.random() * 0.04 - 0.02,
+                color: petalColors[Math.floor(Math.random() * petalColors.length)],
+                opacity: Math.random() * 0.5 + 0.3
+            });
+        }
+
+        function drawNature() {
+            nCtx.clearRect(0, 0, natureCanvas.width, natureCanvas.height);
+            
+            leaves.forEach(leaf => {
+                leaf.y += leaf.speedY;
+                leaf.x += leaf.speedX + Math.sin(leaf.y * 0.015) * 0.5; 
+                leaf.angle += leaf.spin;
+
+                if (leaf.y > natureCanvas.height + 20) {
+                    leaf.y = -20;
+                    leaf.x = Math.random() * natureCanvas.width;
+                }
+                if (leaf.x > natureCanvas.width + 20) leaf.x = -20;
+                if (leaf.x < -20) leaf.x = natureCanvas.width + 20;
+
+                nCtx.save();
+                nCtx.translate(leaf.x, leaf.y);
+                nCtx.rotate(leaf.angle);
+                
+                nCtx.scale(Math.sin(leaf.angle * 2) * 0.3 + 0.7, 1); 
+                
+                nCtx.globalAlpha = leaf.opacity;
+                nCtx.fillStyle = leaf.color;
+                
+                // Formato de pétala
+                nCtx.beginPath();
+                nCtx.moveTo(0, -leaf.size);
+                nCtx.bezierCurveTo(leaf.size * 1.5, -leaf.size * 0.5, leaf.size, leaf.size * 1.5, 0, leaf.size * 2);
+                nCtx.bezierCurveTo(-leaf.size, leaf.size * 1.5, -leaf.size * 1.5, -leaf.size * 0.5, 0, -leaf.size);
+                nCtx.fill();
+                
+                nCtx.restore();
+            });
+            requestAnimationFrame(drawNature);
+        }
+        drawNature();
+
+        // Respostas
+        const respostas = {};
+
+        function nextPage(pageNumber) {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            document.querySelectorAll('.page').forEach(p => {
+                p.classList.remove('active');
+                setTimeout(() => p.style.display = 'none', 400); 
+            });
+
+            setTimeout(() => {
+                const next = document.getElementById(pageNumber === 'final' ? 'page-final' : `page${pageNumber}`);
+                if (next) {
+                    next.style.display = 'block';
+                    setTimeout(() => next.classList.add('active'), 50);
+                }
+            }, 400);
+        }
+
+        function saveAnswer(key, value, nextIdx) {
+            respostas[key] = value;
+            
+            const summaryElem = document.getElementById(`summary-${key}`);
+            if (summaryElem) {
+                summaryElem.innerText = value.replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '').trim();
+            }
+
+            if (nextIdx === 'final') {
+                nextPage('final');
+                startFireworks(); 
+                if (navigator.vibrate) navigator.vibrate([100, 50, 100, 50, 200]);
+            } else {
+                nextPage(nextIdx);
+            }
+        }
+
+        // Fogos (MISTURANDO BRANCO E ROSA)
+        const fCanvas = document.getElementById('fireworks-canvas');
+        const fCtx = fCanvas.getContext('2d');
+        let particles = [];
+        let fireworksAtivos = false;
+
+        function resizeFireworks() {
+            fCanvas.width = window.innerWidth;
+            fCanvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeFireworks);
+        resizeFireworks();
+
+        class FireworkParticle {
+            constructor(x, y, color) {
+                this.x = x;
+                this.y = y;
+                this.color = color;
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 6 + 2;
+                this.vx = Math.cos(angle) * speed;
+                this.vy = Math.sin(angle) * speed;
+                this.alpha = 1;
+                this.decay = Math.random() * 0.02 + 0.015;
+                this.size = Math.random() * 3 + 1;
+            }
+            update() {
+                this.vy += 0.08; 
+                this.vx *= 0.97; 
+                this.vy *= 0.97; 
+                this.x += this.vx;
+                this.y += this.vy;
+                this.alpha -= this.decay;
+            }
+            draw() {
+                fCtx.globalAlpha = this.alpha;
+                fCtx.beginPath();
+                fCtx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                fCtx.fillStyle = this.color;
+                fCtx.fill();
+            }
+        }
+
+        function createExplosion(x, y) {
+            const colors = ['#ff66b2', '#ff007f', '#ffffff'];
+            for (let i = 0; i < 60; i++) {
+                particles.push(new FireworkParticle(x, y, colors[Math.floor(Math.random() * colors.length)]));
+            }
+        }
+
+        function animateFireworks() {
+            if (!fireworksAtivos) return;
+            fCtx.clearRect(0, 0, fCanvas.width, fCanvas.height);
+            
+            if (Math.random() < 0.08) {
+                createExplosion(Math.random() * fCanvas.width, Math.random() * (fCanvas.height * 0.5));
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.update();
+                p.draw();
+                if (p.alpha <= 0) particles.splice(i, 1);
+            }
+            requestAnimationFrame(animateFireworks);
+        }
+
+        function startFireworks() {
+            fireworksAtivos = true;
+            animateFireworks();
+            setTimeout(() => {
+                fireworksAtivos = false;
+                fCtx.clearRect(0, 0, fCanvas.width, fCanvas.height);
+            }, 10000);
+        }
+
+        // FUNÇÃO DE ENVIO PARA O WHATSAPP COM BLINDAGEM DE EMOJIS (Unicode Escapes)
+        function enviarWhatsApp() {
+            const numero = "5561999087722"; 
+            
+            // Usando código Unicode puro (\u{...}) para garantir que o emoji vai funcionar
+            // no celular dela, não importa como o arquivo for salvo no seu PC!
+            const texto = `*Cartão de Embarque*\n\n` +
+                          `\u{1F4C5} *Data:* ${respostas['data']}\n` +
+                          `\u{1F457} *Look:* ${respostas['roupa']}\n` +
+                          `\u{1F3B5} *Música:* ${respostas['musica']}\n` +
+                          `\u{1F374} *Jantar:* ${respostas['comida']}\n` +
+                          `\u{1F36A} *Sobremesa:* ${respostas['sobremesa']}\n` +
+                          `\u{1F4F8} *Registro:* ${respostas['registro']}\n` +
+                          `\u{2708}\u{FE0F} *Despedida:* ${respostas['espanha']}\n` +
+                          `\u{1F4DC} *Regra Suprema:* ${respostas['regra']}`;
+
+            const url = `https://wa.me/${numero}?text=${encodeURIComponent(texto)}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
